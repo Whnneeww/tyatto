@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>完全匿名チャット</title>
+</head>
+<body>
+    <h1>完全匿名チャット</h1>
+    <div id="messageArea">
+        <ul>
+            <li th:each="message : ${messages}">
+                <span th:text="${message}"></span>
+            </li>
+        </ul>
+    </div>
+    <form action="#" th:action="@{/send}" method="post">
+        <input type="text" name="message" placeholder="メッセージを入力してください">
+        <button type="submit">送信</button>
+    </form>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script th:inline="javascript">
+        var socket = new SockJS('/chat');
+        var stompClient = Stomp.over(socket);
+        stompClient.connect({}, function() {
+            stompClient.subscribe('/topic/messages', function (message) {
+                showMessage(JSON.parse(message.body));
+            });
+        });
+
+        function showMessage(message) {
+            var messageList = document.getElementById('messageArea').getElementsByTagName('ul')[0];
+            var li = document.createElement("li");
+            li.innerText = message;
+            messageList.appendChild(li);
+        }
+    </script>
+</body>
+</html>
